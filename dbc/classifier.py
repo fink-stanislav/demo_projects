@@ -2,6 +2,7 @@
 import numpy as np
 
 from PIL import ImageFile
+from PIL import Image
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from keras.preprocessing import image
@@ -30,9 +31,8 @@ class Classifier(object):
     def _get_dir(self, path):
         return '{}/{}'.format(self.root_dir, path)
 
-    def face_detector(self, img_path):
-        img = cv2.imread(img_path)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    def face_detector(self, img):
+        gray = cv2.cvtColor(np.array(img), cv2.COLOR_BGR2GRAY)
         faces = self.face_cascade.detectMultiScale(gray)
         return len(faces) > 0
 
@@ -47,42 +47,43 @@ class Classifier(object):
     def extract_Xception(self, tensor):
         return xc.Xception(weights='imagenet', include_top=False).predict(xc.preprocess_input(tensor))
 
-    def path_to_tensor(self, img_path):
+    def img_to_tensor(self, img):
         # loads RGB image as PIL.Image.Image type
-        img = image.load_img(img_path, target_size=(224, 224))
+        #img = image.load_img(img_path, target_size=(224, 224))
         # convert PIL.Image.Image type to 3D tensor with shape (224, 224, 3)
+        img = img.resize((224, 224), Image.ANTIALIAS)
         x = image.img_to_array(img)
         # convert 3D tensor to 4D tensor with shape (1, 224, 224, 3) and return 4D tensor
         return np.expand_dims(x, axis=0)
 
-    def predict_dog_breed(self, model, img_path, dog_names):
-        tensor = self.path_to_tensor(img_path)
+    def predict_dog_breed(self, model, img, dog_names):
+        tensor = self.img_to_tensor(img)
         bottleneck_feature = self.extract_Xception(tensor)
         # obtain predicted vector
         predicted_vector = model.predict(bottleneck_feature)
         # return dog breed that is predicted by the model
         return dog_names[np.argmax(predicted_vector)]
 
-    def ResNet50_predict_labels(self, img_path):
+    def ResNet50_predict_labels(self, img):
         # returns prediction vector for image located at img_path
-        img = r50.preprocess_input(self.path_to_tensor(img_path))
+        img = r50.preprocess_input(self.img_to_tensor(img))
         return np.argmax(self.ResNet50_model.predict(img))
 
-    def dog_detector(self, img_path):
-        prediction = self.ResNet50_predict_labels(img_path)
+    def dog_detector(self, img):
+        prediction = self.ResNet50_predict_labels(img)
         return ((prediction <= 268) & (prediction >= 151)) 
 
-    def detect_creature(self, img_path):
-        if (self.dog_detector(img_path)):
+    def detect_creature(self, img):
+        if (self.dog_detector(img)):
             return 'dog'
-        elif self.face_detector(img_path):
+        elif self.face_detector(img):
             return 'human'
         return 'neither'
 
-    def make_prediction(self, img_path):
-        detected = self.detect_creature(img_path)
+    def make_prediction(self, img):
+        detected = self.detect_creature(img)
         result = {}
-        result[detected] = self.predict_dog_breed(self.model, img_path, self.dog_names)
+        result[detected] = self.predict_dog_breed(self.model, img, self.dog_names)
         return result
 
     def prettify_breed(self, breed):
@@ -92,8 +93,8 @@ class Classifier(object):
         else:
             return breed
 
-    def interact(self, img_path):
-        prediction = self.make_prediction(img_path)
+    def interact(self, img):
+        prediction = self.make_prediction(img)
     
         keys = ['dog', 'human', 'neither']    
         for key in keys:
@@ -106,3 +107,5 @@ class Classifier(object):
                     return ('This is a dog, possibly {}'.format(breed))
                 else:
                     return ('This thing is unknown for me but it resembles {}'.format(breed))
+
+classifier = Classifier()
