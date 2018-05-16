@@ -1,4 +1,4 @@
-opencv_python==3.4.0.14
+opencv_python==3.4.0
 web.py==0.39
 numpy==1.14.3
 Keras==2.1.6
