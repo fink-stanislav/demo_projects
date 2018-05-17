@@ -108,4 +108,3 @@ class Classifier(object):
                 else:
                     return ('This thing is unknown for me but it resembles {}'.format(breed))
 
-classifier = Classifier()
