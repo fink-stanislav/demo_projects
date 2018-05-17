@@ -15,12 +15,15 @@ class test:
 
 class classify_dog:
     def POST(self):
-        web.header('Access-Control-Allow-Origin', '*')
-        form = web.input(image = "img")
-        image = Image.open(io.BytesIO(form.img))
-        if c.cls is None:
-            c.cls = c.Classifier()
-        return c.cls.interact(image)
+        try:
+            web.header('Access-Control-Allow-Origin', '*')
+            form = web.input(image = "img")
+            image = Image.open(io.BytesIO(form.img))
+            if c.cls is None:
+                c.cls = c.Classifier()
+            return c.cls.interact(image)
+        except:
+            raise web.internalerror('Analysis failed')
 
 web.config.debug = False
 app = web.application(urls, globals())
