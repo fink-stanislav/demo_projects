@@ -2,7 +2,7 @@
 import web
 from PIL import Image
 import io
-from dbc.classifier import Classifier
+import dbc.classifier as c
 
 urls = (
    '/classify_dog', 'classify_dog',
@@ -17,9 +17,12 @@ class classify_dog:
     def POST(self):
         form = web.input(image = "img")
         image = Image.open(io.BytesIO(form.img))
-        return Classifier().interact(image)
+        if c.cls is None:
+            c.cls = c.Classifier()
+        return c.cls.interact(image)
 
 app = web.application(urls, globals())
+#app = app.wsgifunc()
 
 if __name__ == "__main__":
     app.run()
