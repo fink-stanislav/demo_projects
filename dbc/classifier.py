@@ -27,6 +27,7 @@ class Classifier(object):
         self.model = self.create_transferred_model()
         self.face_cascade = cv2.CascadeClassifier(self._get_dir('resources/haarcascade_frontalface_alt.xml'))
         self.ResNet50_model = r50.ResNet50(weights='imagenet')
+        self.xcModel = xc.Xception(weights='imagenet', include_top=False)
 
     def _get_dir(self, path):
         return '{}/{}'.format(self.root_dir, path)
@@ -45,7 +46,7 @@ class Classifier(object):
         return transferred_model
 
     def extract_Xception(self, tensor):
-        return xc.Xception(weights='imagenet', include_top=False).predict(xc.preprocess_input(tensor))
+        return self.xcModel.predict(xc.preprocess_input(tensor))
 
     def img_to_tensor(self, img):
         # loads RGB image as PIL.Image.Image type
