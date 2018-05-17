@@ -3,18 +3,11 @@
 .metadata
 .settings/
 
-agents/.ipynb_checkpoints
-
 *.pyc
 
 logs.log
-ats_env/**
-
-temp/**
 
 build/**
 dist/**
-ats.egg-info/**
+dbc.egg-info/**
 
-orders/**
-error.txt
